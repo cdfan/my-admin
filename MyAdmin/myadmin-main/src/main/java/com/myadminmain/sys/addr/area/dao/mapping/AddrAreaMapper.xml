@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.sys.addr.area.dao.AddrAreaMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.sys.addr.area.entity.AddrArea">
+        <id column="AREA_ID" property="areaId"/>
+        <result column="AREA_CODE" property="areaCode"/>
+        <result column="AREA_NAME" property="areaName"/>
+        <result column="CITY_CODE" property="cityCode"/>
+        <result column="SHORT_NAME" property="shortName"/>
+        <result column="LNG" property="lng"/>
+        <result column="LAT" property="lat"/>
+        <result column="SORT" property="sort"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MEMO" property="memo"/>
+        <result column="childAddrCount" property="childAddrCount"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.AREA_ID,
+        A.AREA_CODE,
+        A.AREA_NAME,
+        A.CITY_CODE,
+        A.SHORT_NAME,
+        A.LNG,
+        A.LAT,
+        A.SORT,
+        A.CREATE_TIME,
+        A.UPDATE_TIME,
+        A.MEMO
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_addr_area A
+    </sql>
+    <select id="getAreaCascader" resultMap="BaseResultMap">
+        SELECT A.AREA_CODE, A.AREA_NAME, COUNT(B.street_id)AS childAddrCount
+          FROM <include refid="tableName"></include>
+          LEFT JOIN sys_addr_street B ON A.AREA_CODE = B.AREA_CODE
+        WHERE A.CITY_CODE = #{cityCode}
+        GROUP BY A.AREA_CODE, A.AREA_NAME
+    </select>
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.sys.dept.dao.DeptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.sys.dept.entity.Dept">
+        <id column="dept_id" property="deptId" />
+        <result column="pid" property="pid" />
+        <result column="dept_name" property="deptName" />
+        <result column="dept_fullname" property="deptFullname" />
+        <result column="remark" property="remark" />
+        <result column="order_num" property="orderNum" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.dept_id,
+        A.pid,
+        A.dept_name,
+        A.dept_fullname,
+        A.remark,
+        A.order_num,
+        A.create_user,
+        A.create_time,
+        A.update_user,
+        A.update_time
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_dept A
+    </sql>
+    <select id="queryParentDept" resultType="java.util.Map" statementType="CALLABLE">
+        {CALL sys_dept_parents_like_query('dept_name',concat('%',#{deptName,mode=IN},'%'))}
+    </select>
+    <select id="getUserDept" resultType="java.util.Map">
+        SELECT ud_id, user_id, dept_id FROM sys_user_dept WHERE dept_id = #{deptId}
+    </select>
+</mapper>

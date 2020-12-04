@@ -1,0 +1,67 @@
+package ${package.ServiceImpl};
+
+## 查询条件
+#set($queryFields=${cfg.queryFields})
+## 获取查询字段信息
+#set($filterFields=[])
+#foreach($field in ${table.fields})
+    #foreach($filterCode in $queryFields)
+        #if(${field.propertyName} == $filterCode)
+            #set($temp=$filterFields.add($field))
+        #end
+    #end
+#end
+import ${package.Entity}.${entity};
+import ${package.Mapper}.${table.mapperName};
+import ${package.Service}.${table.serviceName};
+import ${superServiceImplClassPackage};
+import org.springframework.stereotype.Service;
+#if(!$queryFields.isEmpty())
+import com.util.ToolUtil;
+import org.apache.commons.lang3.StringUtils;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+#end
+
+/**
+ * @author ${author}
+ * @version: 1.0
+ * @date ${date}
+ * @description: $!{table.comment} service实现类
+ */
+@Service
+#if(${kotlin})
+open class ${table.serviceImplName} : ${superServiceImplClass}<${table.mapperName}, ${entity}>(), ${table.serviceName} {
+
+}
+#else
+public class ${table.serviceImplName} extends ${superServiceImplClass}<${table.mapperName}, ${entity}> implements ${table.serviceName} {
+
+#if(!$queryFields.isEmpty())
+    #set($arg = "IPage<${entity}> page")
+    #foreach($field in $filterFields)
+        #set($fieldType=${field.propertyType})
+        #if(${field.propertyType}=="LocalDateTime")
+            #set($fieldType="String")
+        #end
+        #set($arg=$arg+", "+$fieldType+" "+${field.propertyName})
+    #end
+    @Override
+    public IPage<${entity}> pageInfo($arg) {
+        QueryWrapper<${entity}> query = new QueryWrapper<${entity}>();
+        #foreach($field in $filterFields)
+            #if(${field.propertyType}=="LocalDateTime")
+        if (StringUtils.isNotEmpty(${field.propertyName})) {
+            query = ToolUtil.addTimeQuery(query, ${field.propertyName}, "${field.name}");
+        }
+            #else
+        if (StringUtils.isNotEmpty(${field.propertyName})) {
+            query = query.eq("${field.name}", ${field.propertyName});
+        }
+            #end
+        #end
+        return this.page(page, query);
+    }
+#end
+}
+#end

@@ -1,0 +1,46 @@
+// $!{cfg.modelName}相关api
+import request from '@/utils/request'
+
+// 获取$!{cfg.modelName}
+export function ${table.entityPath}Info(query) {
+  return request({
+    url: '/${table.entityPath}/${table.entityPath}InfoPage',
+    method: 'get',
+    params: query
+  })
+}
+
+// 新增$!{cfg.modelName}
+export function create${entity}(data) {
+  return request({
+    url: '/${table.entityPath}/${table.entityPath}Info',
+    method: 'post',
+    data
+  })
+}
+
+// 修改$!{cfg.modelName}
+export function update${entity}(data) {
+  return request({
+    url: '/${table.entityPath}/${table.entityPath}Info',
+    method: 'put',
+    data
+  })
+}
+
+// 删除$!{cfg.modelName}
+export function delete${entity}(id) {
+  return request({
+    url: '/${table.entityPath}/${table.entityPath}Info/' + id,
+    method: 'delete'
+  })
+}
+
+// 根据条件查询$!{cfg.modelName}数据数量
+export function count${entity}(query) {
+  return request({
+    url: '/${table.entityPath}/${table.entityPath}InfoCount',
+    method: 'get',
+    params: query
+  })
+}

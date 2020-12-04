@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.monitor.log.dao.LoginLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.monitor.log.entity.LoginLog">
+        <id column="login_log_id" property="loginLogId"/>
+        <result column="user_code" property="userCode"/>
+        <result column="log_type" property="logType"/>
+        <result column="state" property="state"/>
+        <result column="ip" property="ip"/>
+        <result column="msg" property="msg"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.login_log_id,
+        A.user_code,
+        A.log_type,
+        A.state,
+        A.ip,
+        A.msg,
+        A.create_time
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_login_log A
+    </sql>
+
+    <select id="daysLoginUserCount" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(A.create_time, '%Y-%m-%d') as time,
+            COUNT(1) as count
+        FROM
+            <include refid="tableName" />
+        WHERE A.log_type = '1'
+              AND A.create_time >= #{time}
+        GROUP BY DATE_FORMAT(A.create_time, '%Y-%m-%d')
+        ORDER BY DATE_FORMAT(A.create_time, '%Y-%m-%d')
+    </select>
+
+    <select id="daysLoginIpCount" resultType="java.util.Map">
+        SELECT
+            ipResult.time AS time ,
+            COUNT(1) as count
+        FROM
+            (SELECT
+                 DATE_FORMAT(A.create_time, '%Y-%m-%d') AS time,
+                 A.ip
+            FROM
+            <include refid="tableName" />
+            WHERE A.log_type = '1' AND A.create_time >= #{time}
+            GROUP BY DATE_FORMAT(A.create_time, '%Y-%m-%d'), A.ip
+            ORDER BY DATE_FORMAT(A.create_time, '%Y-%m-%d')
+            ) ipResult
+        GROUP BY ipResult.time
+    </select>
+</mapper>

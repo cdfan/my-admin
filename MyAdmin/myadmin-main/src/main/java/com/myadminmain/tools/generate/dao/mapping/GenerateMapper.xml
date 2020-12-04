@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.tools.generate.dao.GenerateMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.tools.generate.entity.Generate">
+        <id column="generate_id" property="generateId" />
+        <result column="table_name" property="tableName" />
+        <result column="table_prefix" property="tablePrefix" />
+        <result column="model_name" property="modelName" />
+        <result column="author" property="author" />
+        <result column="output_dir" property="outputDir" />
+        <result column="package_path" property="packagePath" />
+        <result column="query_field" property="queryField" />
+        <result column="form_layout" property="formLayout" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 表信息查询映射结果 -->
+    <resultMap id="tablesInfoMap" type="com.myadminmain.tools.generate.entity.TablesInfo">
+        <result column="TABLE_NAME" property="tableName" />
+        <result column="TABLE_COMMENT" property="tableComment" />
+        <collection property="columnsInfo" ofType="com.myadminmain.tools.generate.entity.ColumnsInfo">
+            <result column="COLUMN_NAME" property="columnName"/>
+            <result column="COLUMN_COMMENT" property="columnComment"/>
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.generate_id,
+        A.table_name,
+        A.table_prefix,
+        A.model_name,
+        A.author,
+        A.output_dir,
+        A.package_path,
+        A.query_field,
+        A.form_layout,
+        A.create_user,
+        A.create_time,
+        A.update_user,
+        A.update_time
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_generate A
+    </sql>
+
+    <select id="getTablesInfo" resultMap="tablesInfoMap">
+        SELECT
+            t.TABLE_NAME,
+            t.TABLE_COMMENT,
+            c.COLUMN_NAME,
+            c.COLUMN_COMMENT
+        FROM information_schema.TABLES t
+            INNER JOIN INFORMATION_SCHEMA.Columns c ON t.TABLE_NAME = c.TABLE_NAME
+        WHERE t.`TABLE_SCHEMA` = 'myadmin_db' AND c.`TABLE_SCHEMA` = 'myadmin_db' AND t.TABLE_TYPE = 'BASE TABLE'
+        ORDER BY t.CREATE_TIME DESC, c.COLUMN_NAME
+    </select>
+</mapper>

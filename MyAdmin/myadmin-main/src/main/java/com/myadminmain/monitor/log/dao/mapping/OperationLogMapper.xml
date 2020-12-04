@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.monitor.log.dao.OperationLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.monitor.log.entity.OperationLog">
+        <id column="operation_log_id" property="operationLogId"/>
+        <result column="user_code" property="userCode"/>
+        <result column="log_type" property="logType"/>
+        <result column="business_name" property="businessName"/>
+        <result column="class_name" property="className"/>
+        <result column="method_name" property="methodName"/>
+        <result column="arg_msg" property="argMsg"/>
+        <result column="exception_msg" property="exceptionMsg"/>
+        <result column="uri" property="uri"/>
+        <result column="method" property="method"/>
+        <result column="elapsed_time" property="elapsedTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="ip" property="ip"/>
+        <result column="address" property="address"/>
+        <result column="browser" property="browser"/>
+        <result column="os" property="os"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.operation_log_id,
+        A.user_code,
+        A.log_type,
+        A.business_name,
+        A.class_name,
+        A.method_name,
+        A.arg_msg,
+        A.exception_msg,
+        A.uri,
+        A.method,
+        A.elapsed_time,
+        A.create_time,
+        A.ip,
+        A.address,
+        A.browser,
+        A.os
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_operation_log A
+    </sql>
+    <select id="daysRequestCount" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(A.create_time, '%Y-%m-%d') as time,
+            COUNT(1) as count
+        FROM
+            <include refid="tableName" />
+        WHERE A.create_time >= #{time}
+        GROUP BY DATE_FORMAT(A.create_time, '%Y-%m-%d')
+        ORDER BY DATE_FORMAT(A.create_time, '%Y-%m-%d')
+    </select>
+</mapper>

@@ -1,0 +1,58 @@
+package ${package.Service};
+
+## 查询条件
+#set($queryFields=${cfg.queryFields})
+## 获取查询字段信息
+#set($filterFields=[])
+#foreach($field in ${table.fields})
+    #foreach($filterCode in $queryFields)
+        #if(${field.propertyName} == $filterCode)
+            #set($temp=$filterFields.add($field))
+        #end
+    #end
+#end
+#if(!$queryFields.isEmpty())
+import com.baomidou.mybatisplus.core.metadata.IPage;
+#end
+import ${package.Entity}.${entity};
+import ${superServiceClassPackage};
+
+/**
+ * @author ${author}
+ * @version: 1.0
+ * @date ${date}
+ * @description: $!{table.comment} service接口
+ */
+#if(${kotlin})
+interface ${table.serviceName} : ${superServiceClass}<${entity}>
+#else
+public interface ${table.serviceName} extends ${superServiceClass}<${entity}> {
+
+#if(!$queryFields.isEmpty())
+    /**
+     * 功能描述: 分页查询$!{cfg.modelName}
+     *
+     * @param page 分页对象
+    #foreach($field in $filterFields)
+        #set($fieldComment=${field.comment})
+        #if(${field.propertyType}=="LocalDateTime")
+            #set($fieldComment=${field.comment}+"，格式为yyyy-MM-dd，范围日期用,号分割")
+        #end
+     * @param ${field.propertyName} $fieldComment
+    #end
+     * @return com.baomidou.mybatisplus.core.metadata.IPage<${package.Entity}.${entity}>
+     * @author ${author}
+     * @date ${date}
+     */
+    #set($arg = "IPage<${entity}> page")
+    #foreach($field in $filterFields)
+        #set($fieldType=${field.propertyType})
+        #if(${field.propertyType}=="LocalDateTime")
+            #set($fieldType="String")
+        #end
+        #set($arg=$arg+", "+$fieldType+" "+${field.propertyName})
+    #end
+    IPage<${entity}> pageInfo($arg);
+#end
+}
+#end

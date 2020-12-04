@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.sys.menu.dao.MenuMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.sys.menu.entity.Menu">
+        <id column="menu_id" property="menuId" />
+        <result column="pid" property="pid" />
+        <result column="menu_code" property="menuCode" />
+        <result column="menu_name" property="menuName" />
+        <result column="url" property="url" />
+        <result column="icon" property="icon" />
+        <result column="order_num" property="orderNum" />
+        <result column="ismenu" property="ismenu" />
+        <result column="state" property="state" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.menu_id,
+        A.pid,
+        A.menu_code,
+        A.menu_name,
+        A.url,
+        A.icon,
+        A.order_num,
+        A.ismenu,
+        A.state,
+        A.create_user,
+        A.create_time,
+        A.update_user,
+        A.update_time
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_menu A
+    </sql>
+    <delete id="deleteRoleMenuByMenuId">
+        DELETE  FROM sys_role_menu WHERE menu_id = #{menuId}
+    </delete>
+
+    <select id="findMenuByUserId" resultMap="BaseResultMap">
+        SELECT DISTINCT <include refid="Base_Column_List"></include>
+        FROM <include refid="tableName"></include>
+            INNER JOIN sys_role_menu rm
+              ON a.menu_id = rm.menu_id
+            INNER JOIN sys_user_role ur
+              ON rm.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+        and a.state = '1'
+        ORDER BY a.order_num,a.pid
+    </select>
+
+    <select id="queryParentMenu" resultType="java.util.Map" statementType="CALLABLE">
+        {CALL sys_menu_parents_query('menu_code',#{menuCode,mode=IN},'menu_name',concat('%',#{menuName,mode=IN},'%'),#{type,mode=IN})}
+    </select>
+
+    <select id="getUserMenu" resultType="java.util.Map">
+        SELECT sur.user_id FROM  sys_user_role sur
+            INNER JOIN sys_role_menu srm on sur.role_id = srm.role_id
+        WHERE srm.menu_id = #{menuId}
+    </select>
+</mapper>

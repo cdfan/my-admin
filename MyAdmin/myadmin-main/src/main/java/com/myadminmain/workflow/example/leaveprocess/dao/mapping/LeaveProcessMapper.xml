@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.workflow.example.leaveprocess.dao.LeaveProcessMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.workflow.example.leaveprocess.entity.LeaveProcess">
+        <id column="leave_id" property="leaveId"/>
+        <result column="proc_inst_id" property="procInstId"/>
+        <result column="proc_state" property="procState"/>
+        <result column="leave_type" property="leaveType"/>
+        <result column="user_id" property="userId"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="leave_reason" property="leaveReason"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="leave_type_name" property="leaveTypeName"/>
+        <result column="user_name" property="userName"/>
+        <result column="proc_state_name" property="procStateName"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.leave_id,
+        A.proc_inst_id,
+        A.proc_state,
+        A.leave_type,
+        A.user_id,
+        A.start_time,
+        A.end_time,
+        A.leave_reason,
+        A.create_user,
+        A.create_time,
+        A.update_user,
+        A.update_time
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        demo_leave_process A
+    </sql>
+    <select id="pageInfo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>,
+          sd.name as leave_type_name, su.user_name, sdp.name as proc_state_name
+        FROM <include refid="tableName"/>
+            LEFT JOIN sys_dict sd ON A.leave_type = sd.code AND sd.pcode = 'leave_type'
+            LEFT JOIN sys_user su ON a.user_id = su.user_id
+            LEFT JOIN sys_dict sdp ON A.proc_state = sdp.code AND sdp.pcode = 'proc_state'
+        <where>
+            <if test='leaveType!=null and leaveType!=""'>
+                and a.leave_type = #{leaveType}
+            </if>
+            <if test='procState!=null and procState!=""'>
+                and a.proc_state = #{procState}
+            </if>
+            <if test='userId!=null and userId!=""'>
+                and a.user_id = #{userId}
+            </if>
+        </where>
+        order by A.create_time desc
+    </select>
+</mapper>

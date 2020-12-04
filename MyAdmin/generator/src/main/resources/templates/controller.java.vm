@@ -1,0 +1,247 @@
+package ${package.Controller};
+
+##  获取主键
+#foreach($field in ${table.fields})
+    #if(${field.keyFlag})
+        #set($keyPropertyName=${field.propertyName})
+    #end
+#end
+##  获取主键的get方法
+#set($keyPropertyGetMethod="get"+$keyPropertyName.substring(0,1).toUpperCase()+$keyPropertyName.substring(1)+"()")
+## 查询条件
+#set($queryFields=${cfg.queryFields})
+#set($tableFields=${table.fields})
+## 获取查询字段信息
+#set($filterFields=[])
+#foreach($field in $tableFields)
+    #foreach($filterCode in $queryFields)
+        #if(${field.propertyName} == $filterCode)
+            #set($temp=$filterFields.add($field))
+        #end
+    #end
+#end
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.common.resultdata.ResultData;
+import com.common.annotion.BussinessLog;
+import com.common.annotion.Permission;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import com.exception.MyAdminException;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+#if(!$queryFields.isEmpty())
+import org.springframework.web.bind.annotation.RequestParam;
+#end
+#if(${restControllerStyle})
+import org.springframework.web.bind.annotation.RestController;
+#else
+import org.springframework.stereotype.Controller;
+#end
+#if(${superControllerClassPackage})
+import ${superControllerClassPackage};
+#end
+import ${package.Entity}.${entity};
+import ${package.Service}.${table.serviceName};
+
+import java.util.List;
+
+/**
+ * @author ${author}
+ * @version 1.0
+ * @date ${date}
+ * @description: $!{cfg.modelName}管理 前端控制器
+ */
+#if(${restControllerStyle})
+@RestController
+#else
+@Controller
+#end
+@RequestMapping("#if(${package.ModuleName})/${package.ModuleName}#end/#if(${controllerMappingHyphenStyle})${controllerMappingHyphen}#else${table.entityPath}#end")
+@Api(tags = "$!{table.controllerName}", description = "$!{cfg.modelName}操作api")
+#if(${kotlin})
+class ${table.controllerName}#if(${superControllerClass}) : ${superControllerClass}()
+#end
+#else
+    #if(${superControllerClass})
+public class ${table.controllerName} extends ${superControllerClass} {
+    #else
+public class ${table.controllerName} {
+    #end
+
+    @Autowired
+    private ${table.serviceName} ${table.entityPath}Service;
+
+    /**
+     * 功能描述: 根据主键查询$!{cfg.modelName}
+     *
+     * @param ${keyPropertyName} $!{cfg.modelName}id
+     * @return com.common.resultdata.ResultData<${package.Entity}.${entity}>
+     * @author ${author}
+     * @date ${date}
+     */
+    @Permission("${table.entityPath}_query")
+    @BussinessLog("$!{cfg.modelName}-单记录查询")
+    @ApiOperation(value = "$!{cfg.modelName}-单记录查询", notes = "根据主键查询$!{cfg.modelName}")
+    @ApiImplicitParam(name = "${keyPropertyName}", value = "$!{cfg.modelName}id", required = true, dataType = "int", paramType = "path")
+    @RequestMapping(value = "/${table.entityPath}Info/{${keyPropertyName}}", method = RequestMethod.GET)
+    public ResultData<${entity}> get(@PathVariable("${keyPropertyName}") Integer ${keyPropertyName}) {
+        return new ResultData<${entity}>(${table.entityPath}Service.getById(${keyPropertyName}));
+    }
+
+    /**
+     * 功能描述: 查询所有$!{cfg.modelName}
+     *
+     * @return com.common.resultdata.ResultData<java.util.List<${package.Entity}.${entity}>>
+     * @author ${author}
+     * @date ${date}
+     */
+    @Permission("${table.entityPath}_query")
+    @BussinessLog("$!{cfg.modelName}-列表查询")
+    @ApiOperation(value = "$!{cfg.modelName}-列表查询", notes = "查询所有$!{cfg.modelName}")
+    @RequestMapping(value = "/${table.entityPath}Info", method = RequestMethod.GET)
+    public ResultData<List<${entity}>> list() {
+        return new ResultData<List<${entity}>>(${table.entityPath}Service.list());
+    }
+
+    /**
+     * 功能描述: 分页查询$!{cfg.modelName}
+     *
+     * @return com.common.resultdata.ResultData<com.baomidou.mybatisplus.core.metadata.IPage<${package.Entity}.${entity}>>
+     * @author ${author}
+     * @date ${date}
+     */
+    @Permission("${table.entityPath}_query")
+    @BussinessLog("$!{cfg.modelName}-分页查询")
+    @ApiOperation(value = "$!{cfg.modelName}-分页查询", notes = "分页查询$!{cfg.modelName}")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "currentPage", value = "当前页，页码，默认为1", dataType = "int", paramType = "query"),
+        @ApiImplicitParam(name = "limit", value = "每页多少条数据，默认为10", dataType = "int", paramType = "query"),
+        @ApiImplicitParam(name = "sort", value = "排序字段", dataType = "String", paramType = "query"),
+#if(!$queryFields.isEmpty())
+        @ApiImplicitParam(name = "order", value = "asc或desc(升序或降序)，默认为升序", dataType = "String", paramType = "query"),
+    #foreach($field in $filterFields)
+        #set($fieldType=${field.propertyType})
+        #set($fieldComment=${field.comment})
+        #if(${field.propertyType}=="LocalDateTime")
+            #set($fieldType="String")
+            #set($fieldComment=${field.comment}+"，格式为yyyy-MM-dd，范围日期用,号分割")
+        #end
+        #if($foreach.count==$filterFields.size())
+        @ApiImplicitParam(name = "${field.propertyName}", value = "$fieldComment", dataType = "$fieldType", paramType = "query")})
+        #else
+        @ApiImplicitParam(name = "${field.propertyName}", value = "$fieldComment", dataType = "$fieldType", paramType = "query"),
+        #end
+    #end
+#else
+        @ApiImplicitParam(name = "order", value = "asc或desc(升序或降序)，默认为升序", dataType = "String", paramType = "query")})
+#end
+    @RequestMapping(value = "/${table.entityPath}InfoPage", method = RequestMethod.GET)
+#if(!$queryFields.isEmpty())
+    public ResultData<IPage<${entity}>> page(
+    #foreach($field in $filterFields)
+        #set($fieldType=${field.propertyType})
+        #if(${field.propertyType}=="LocalDateTime")
+            #set($fieldType="String")
+        #end
+        #if($foreach.count==$filterFields.size())
+            @RequestParam(value = "${field.propertyName}", required = false) $fieldType ${field.propertyName}) {
+        #else
+            @RequestParam(value = "${field.propertyName}", required = false) $fieldType ${field.propertyName},
+        #end
+    #end
+#else
+    public ResultData<IPage<${entity}>> page() {
+#end
+        Page<${entity}> page = this.defaultPage(${entity}.class);
+#if(!$queryFields.isEmpty())
+    #set($arg = "page")
+    #foreach($field in $filterFields)
+        #set($arg=$arg+", "+${field.propertyName})
+    #end
+        return new ResultData<IPage<${entity}>>(${table.entityPath}Service.pageInfo($arg));
+#else
+        return new ResultData<IPage<${entity}>>(${table.entityPath}Service.page(page));
+#end
+    }
+
+    /**
+     * 功能描述: 查询$!{cfg.modelName}数据的数量
+     *
+     * @return com.common.resultdata.ResultData<java.lang.Integer>
+     * @author ${author}
+     * @date ${date}
+     */
+    @Permission("${table.entityPath}_query")
+    @BussinessLog("$!{cfg.modelName}-数量查询")
+    @ApiOperation(value = "$!{cfg.modelName}-数量查询", notes = "查询$!{cfg.modelName}数据的数量")
+    @RequestMapping(value = "/${table.entityPath}InfoCount", method = RequestMethod.GET)
+    public ResultData<Integer> count() {
+        return new ResultData<Integer>(${table.entityPath}Service.count());
+    }
+
+    /**
+     * 功能描述: 新增$!{cfg.modelName}
+     *
+     * @param ${table.entityPath} $!{cfg.modelName}实体对象
+     * @return com.common.resultdata.ResultData
+     * @author ${author}
+     * @date ${date}
+     */
+    @Permission("${table.entityPath}_add")
+    @BussinessLog("$!{cfg.modelName}-新增")
+    @ApiOperation(value = "$!{cfg.modelName}-新增", notes = "新增$!{cfg.modelName}")
+    @ApiImplicitParam(name = "${table.entityPath}", value = "$!{cfg.modelName}实体对象", required = true, dataType = "${entity}", paramType = "body")
+    @RequestMapping(value = "/${table.entityPath}Info", method = RequestMethod.POST)
+    public ResultData add(@RequestBody ${entity} ${table.entityPath}) {
+        ${table.entityPath}Service.save(${table.entityPath});
+        return SUCCESS;
+    }
+
+    /**
+     * 功能描述: 修改$!{cfg.modelName}，对象中必须有主键
+     *
+     * @param ${table.entityPath} $!{cfg.modelName}实体对象
+     * @return com.common.resultdata.ResultData
+     * @author ${author}
+     * @date ${date}
+     */
+    @Permission("${table.entityPath}_edit")
+    @BussinessLog("$!{cfg.modelName}-修改")
+    @ApiOperation(value = "$!{cfg.modelName}-修改", notes = "修改$!{cfg.modelName}，对象中必须有主键")
+    @ApiImplicitParam(name = "${table.entityPath}", value = "$!{cfg.modelName}实体对象", required = true, dataType = "${entity}", paramType = "body")
+    @RequestMapping(value = "/${table.entityPath}Info", method = RequestMethod.PUT)
+    public ResultData update(@RequestBody ${entity} ${table.entityPath}) {
+        if(ObjectUtils.isEmpty(${table.entityPath}.${keyPropertyGetMethod})){
+            throw new MyAdminException("修改对象中必须存在主键");
+        }
+        ${table.entityPath}Service.updateById(${table.entityPath});
+        return SUCCESS;
+    }
+
+    /**
+     * 功能描述: 根据主键删除$!{cfg.modelName}
+     *
+     * @param ${keyPropertyName} $!{cfg.modelName}id
+     * @return com.common.resultdata.ResultData
+     * @author ${author}
+     * @date ${date}
+     */
+    @Permission("${table.entityPath}_delete")
+    @BussinessLog("$!{cfg.modelName}-删除")
+    @ApiOperation(value = "$!{cfg.modelName}-删除", notes = "根据主键删除$!{cfg.modelName}")
+    @ApiImplicitParam(name = "${keyPropertyName}", value = "$!{cfg.modelName}id", required = true, dataType = "int", paramType = "path")
+    @RequestMapping(value = "/${table.entityPath}Info/{${keyPropertyName}}", method = RequestMethod.DELETE)
+    public ResultData delete(@PathVariable("${keyPropertyName}") Integer ${keyPropertyName}) {
+        ${table.entityPath}Service.removeById(${keyPropertyName});
+        return SUCCESS;
+    }
+
+}
+#end

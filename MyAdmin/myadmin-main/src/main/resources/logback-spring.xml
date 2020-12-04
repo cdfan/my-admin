@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration  scan="true" scanPeriod="60 seconds" debug="false">
+
+
+    <!-- 日志配置属性 -->
+    <springProperty scope="context" name="log-dir" source="myadmin.log-dir"/>
+    <springProperty scope="context" name="log-file" source="myadmin.log-file"/>
+    <springProperty scope="context" name="log-save-days" source="myadmin.log-save-days"/>
+
+    <!-- 彩色日志依赖的渲染类 -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+    <!-- 彩色日志格式 -->
+    <property name="CONSOLE_LOG_PATTERN" value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr([%15.15t]){magenta} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+    <!--输出到控制台-->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n-->
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <!-- 设置字符集 -->
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 文件记录日志，时间滚动输出  -->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--日志文档输出格式-->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} [%15.15t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}</pattern>
+            <!-- 设置字符集 -->
+            <charset>UTF-8</charset>
+        </encoder>
+
+        <!-- 日志名称，如果没有file 属性，那么只会使用FileNamePattern的文件路径规则
+        如果同时有<File>和<FileNamePattern>，那么当天日志是<File>，而当天之前的会使用fileNamePattern进行重命名。 -->
+        <file>${log-dir}/${log-file}-now.log</file>
+        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志归档命名 -->
+            <fileNamePattern>${log-dir}/${log-file}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!--用来指定日志文件的上限大小，那么到了这个值，就会删除旧的日志，默认不限制大小-->
+            <!--<totalSizeCap>1GB</totalSizeCap>-->
+            <!-- 自动切分文件，当文件大于maxFileSize，则会自动生成另外一个文件-->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>1GB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!--只保留最近90天的日志-->
+            <maxHistory>${log-save-days}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- dev环境下仅输出当前项目的debug日志到控制台-->
+    <springProfile name="dev">
+        <root level="info">
+            <appender-ref ref="console" />
+        </root>
+        <logger name="com.myadminmain" level="debug" additivity="false">
+            <appender-ref ref="console"/>
+        </logger>
+    </springProfile>
+
+    <!-- prod环境下日志都输出到控制台和日志文件中-->
+    <springProfile name="prod">
+        <root level="info">
+            <appender-ref ref="console" />
+            <appender-ref ref="file" />
+        </root>
+        <logger name="com.myadminmain" level="debug" additivity="false">
+            <appender-ref ref="console"/>
+            <appender-ref ref="file"/>
+        </logger>
+    </springProfile>
+</configuration>

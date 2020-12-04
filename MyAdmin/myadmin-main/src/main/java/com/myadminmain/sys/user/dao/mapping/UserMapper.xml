@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.sys.user.dao.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.sys.user.entity.User">
+        <id column="user_id" property="userId" />
+        <result column="user_code" property="userCode" />
+        <result column="user_name" property="userName" />
+        <result column="password" property="password" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="sex" property="sex" />
+        <result column="avatar" property="avatar" />
+        <result column="state" property="state" />
+        <result column="theme_color" property="themeColor" />
+        <result column="theme_size" property="themeSize" />
+        <result column="tags_view" property="tagsView" />
+        <result column="sidebar_logo" property="sidebarLogo" />
+        <result column="remark" property="remark" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- shiroUser映射结果 -->
+    <resultMap id="shiroUserResultMap" type="com.myadminmain.core.shiro.ShiroUser">
+        <id column="user_id" property="userId" />
+        <result column="user_code" property="userCode" />
+        <result column="user_name" property="userName" />
+        <collection property="roleList" ofType="java.lang.Integer">
+            <result column="role_id"/>
+        </collection>
+        <collection property="roleNames" ofType="java.lang.String">
+            <result column="role_name"/>
+        </collection>
+        <collection property="deptList" ofType="java.lang.Integer">
+            <result column="dept_id"/>
+        </collection>
+        <collection property="deptNames" ofType="java.lang.String">
+            <result column="dept_name"/>
+        </collection>
+    </resultMap>
+
+    <!-- 用户所有数据结果映射，包含部门以及角色相关信息 -->
+    <resultMap id="userAllInfoResultMap" type="com.myadminmain.sys.user.entity.User">
+        <id column="user_id" property="userId" />
+        <result column="user_code" property="userCode" />
+        <result column="user_name" property="userName" />
+        <result column="password" property="password" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="sex" property="sex" />
+        <result column="avatar" property="avatar" />
+        <result column="state" property="state" />
+        <result column="theme_color" property="themeColor" />
+        <result column="theme_size" property="themeSize" />
+        <result column="tags_view" property="tagsView" />
+        <result column="sidebar_logo" property="sidebarLogo" />
+        <result column="remark" property="remark" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+        <collection property="roles" ofType="com.myadminmain.sys.role.entity.Role" column="user_id" select="selectRelatedRole" javaType="java.util.List" />
+        <collection property="depts" ofType="com.myadminmain.sys.dept.entity.Dept" column="user_id" select="selectRelatedDept" javaType="java.util.List" />
+        <collection property="avatarHistory" ofType="java.lang.String" column="user_id" select="selectRelatedAvatarHistory" javaType="java.util.List" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.user_id,
+        A.user_code,
+        A.user_name,
+        A.password,
+        A.email,
+        A.phone,
+        A.sex,
+        A.avatar,
+        A.state,
+        A.theme_color,
+        A.theme_size,
+        A.tags_view,
+        A.sidebar_logo,
+        A.remark,
+        A.create_user,
+        A.create_time,
+        A.update_user,
+        A.update_time
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_user A
+    </sql>
+    <insert id="saveUserRole">
+        INSERT INTO sys_user_role (user_id, role_id)
+        VALUES
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (#{userId}, #{roleId})
+        </foreach>
+    </insert>
+    <insert id="saveUserDept">
+        INSERT INTO sys_user_dept (user_id, dept_id)
+        VALUES
+        <foreach collection="deptIds" item="deptId" separator=",">
+            (#{userId}, #{deptId})
+        </foreach>
+    </insert>
+
+    <insert id="saveAvatarHistory">
+        INSERT INTO sys_avatar_history (user_id, avatar)
+        VALUES (#{userId}, #{avatar})
+    </insert>
+
+    <delete id="deleteUserRole">
+        DELETE FROM sys_user_role
+        WHERE user_id = #{userId}
+        <if test='roleIds!=null'>
+            AND role_id IN
+            (
+            <foreach collection="roleIds" item="roleId" index="index" separator="," >
+                #{roleId}
+            </foreach>
+            )
+        </if>
+    </delete>
+    <delete id="deleteUserDept">
+        DELETE FROM sys_user_dept
+        WHERE user_id = #{userId}
+        <if test='deptIds!=null'>
+            AND dept_id IN
+            (
+            <foreach collection="deptIds" item="deptId" index="index" separator="," >
+                #{deptId}
+            </foreach>
+            )
+        </if>
+    </delete>
+    <delete id="deleteAvatarHistory">
+        DELETE FROM sys_avatar_history
+        WHERE user_id = #{userId}
+    </delete>
+
+    <select id="getShiroUser" resultMap="shiroUserResultMap">
+        SELECT u.user_id,u.user_code,u.user_name,r.role_id,r.role_name,d.dept_id,d.dept_name
+        FROM sys_user u
+        LEFT JOIN sys_user_role ur ON u.user_id = ur.user_id
+        LEFT JOIN sys_role r ON ur.role_id = r.role_id
+        LEFT JOIN sys_user_dept ud ON u.user_id = ud.user_id
+        LEFT JOIN sys_dept d ON ud.dept_id = d.dept_id
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <select id="queryUserAllInfo" resultMap="userAllInfoResultMap">
+        select DISTINCT <include refid="Base_Column_List"></include>
+        FROM <include refid="tableName"></include>
+        LEFT JOIN sys_user_dept ud ON a.user_id = ud.user_id
+        LEFT JOIN sys_user_role ur ON a.user_id = ur.user_id
+        <where>
+            <if test='userName!=null and userName!=""'>
+                and a.user_name like CONCAT('%',#{userName},'%')
+            </if>
+            <if test='userCode!=null and userCode!=""'>
+                and a.user_code = #{userCode}
+            </if>
+            <if test='deptId!=null and deptId!=""'>
+                and FIND_IN_SET(ud.dept_id,sys_dept_child(#{deptId}))
+            </if>
+            <if test='roleId!=null and roleId!=""'>
+                and ur.role_id = #{roleId}
+            </if>
+            <if test='userId!=null and userId!=""'>
+                and a.user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <!--获取和用户相关的角色-->
+    <select id="selectRelatedRole" resultType="com.myadminmain.sys.role.entity.Role">
+        SELECT
+            r.role_id,
+            r.role_name,
+            r.role_code,
+            r.remark,
+            r.create_user,
+            r.create_time,
+            r.update_user,
+            r.update_time
+        FROM sys_user_role ur
+        INNER JOIN sys_role r ON ur.role_id = r.role_id
+        WHERE ur.user_id = #{user_id}
+    </select>
+
+    <!--获取和用户相关的部门-->
+    <select id="selectRelatedDept" resultType="com.myadminmain.sys.dept.entity.Dept">
+        SELECT
+            d.dept_id,
+            d.pid,
+            d.dept_name,
+            d.dept_fullname,
+            d.remark,
+            d.order_num,
+            d.create_user,
+            d.create_time,
+            d.update_user,
+            d.update_time
+        FROM sys_user_dept ud
+            INNER JOIN sys_dept d ON ud.dept_id = d.dept_id
+        WHERE ud.user_id = #{user_id}
+    </select>
+
+    <!--获取和用户相关的历史头像-->
+    <select id="selectRelatedAvatarHistory" resultType="java.lang.String">
+        SELECT ah.avatar
+        FROM sys_avatar_history ah
+        WHERE ah.user_id = #{user_id}
+    </select>
+
+    <select id="queryUserByRolecodes" resultMap="BaseResultMap">
+        select DISTINCT <include refid="Base_Column_List"></include>
+        FROM <include refid="tableName"></include>
+            INNER JOIN sys_user_role ur ON a.user_id = ur.user_id
+            INNER JOIN sys_role r ON ur.role_id = r.role_id
+        WHERE r.role_code IN
+        <foreach collection="list" item="code" index="index" open="(" close=")" separator=",">
+            #{code}
+        </foreach>;
+    </select>
+
+
+</mapper>

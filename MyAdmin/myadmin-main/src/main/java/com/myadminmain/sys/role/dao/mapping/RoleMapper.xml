@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.sys.role.dao.RoleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.sys.role.entity.Role">
+        <id column="role_id" property="roleId" />
+        <result column="role_name" property="roleName" />
+        <result column="role_code" property="roleCode" />
+        <result column="remark" property="remark" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 包含菜单查询结果集 -->
+    <resultMap id="roleMenuResultMap" type="com.myadminmain.sys.role.entity.Role">
+        <result column="role_id" property="roleId" />
+        <result column="role_name" property="roleName" />
+        <result column="role_code" property="roleCode" />
+        <result column="remark" property="remark" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+        <collection property="menuTree" ofType="java.util.Map" column="role_id" select="selectTreeMenu" javaType="java.util.List" />
+        <!--<collection property="hasMenuIdList" ofType="java.lang.Integer" column="role_id"  select="selectHasMenuId" javaType="java.util.List" />-->
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.role_id,
+        A.role_name,
+        A.role_code,
+        A.remark,
+        A.create_user,
+        A.create_time,
+        A.update_user,
+        A.update_time
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_role A
+    </sql>
+
+    <insert id="saveRoleMenu">
+        INSERT INTO sys_role_menu (menu_id, role_id)
+        VALUES
+        <foreach collection="newMenuIds" item="menuId" separator=",">
+            (#{menuId}, #{roleId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteRoleMenu">
+        DELETE FROM sys_role_menu
+        WHERE rm_id IN (
+            <foreach collection="roleMenu" item="obj" index="index" separator="," >
+                #{obj.rmId}
+            </foreach>
+        )
+    </delete>
+
+    <delete id="deleteRoleMenuByRoleId">
+        DELETE FROM sys_role_menu WHERE role_id = #{roleId}
+    </delete>
+
+    <select id="findRoleByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"></include>
+        from <include refid="tableName"></include>
+            INNER JOIN sys_user_role ur
+                ON a.role_id = ur.role_id
+            INNER JOIN sys_user u
+                ON ur.user_id = u.user_id
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <select id="queryRoleAndMenus" resultMap="roleMenuResultMap">
+        select <include refid="Base_Column_List"></include>
+        FROM <include refid="tableName"></include>
+        <where>
+            <if test='roleName!=null and roleName!=""'>
+                and a.role_name like CONCAT('%',#{roleName},'%')
+            </if>
+            <if test='roleCode!=null and roleCode!=""'>
+                and a.role_code = #{roleCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectTreeMenu" resultType="java.util.Map">
+        select m.menu_id, m.pid, m.menu_name
+        FROM sys_role_menu rm
+            LEFT JOIN sys_menu m ON rm.menu_id = m.menu_id
+        where rm.role_id = #{roleId}
+        order by m.order_num, m.menu_code
+    </select>
+
+    <select id="getHasMenuId" resultType="java.lang.Integer">
+        SELECT rm.menu_id as menu_id_list
+        FROM sys_role_menu rm
+        WHERE rm.role_id = #{roleId}
+    </select>
+    <select id="getRoleMenu" resultType="java.util.Map">
+        SELECT rm_id,menu_id,role_id FROM sys_role_menu WHERE role_id = #{roleId}
+    </select>
+
+    <select id="getUserRole" resultType="java.util.Map">
+        SELECT ur_id, user_id, role_id FROM sys_user_role WHERE role_id = #{roleId}
+    </select>
+</mapper>

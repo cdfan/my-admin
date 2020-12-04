@@ -1,0 +1,368 @@
+<template>
+  <div class="app-container">
+    <el-form :model="listQuery" ref="filterForm" :inline="true">
+## 查询条件
+#set($queryFields=${cfg.queryFields})
+#set($tableFields=${table.fields})
+## 日期查条件
+#set($existsDate=false)
+#set($dateFilter=[])
+## 页面显示form表单
+#set($dataViewFormFields=[])
+## form数据字段
+#set($dataFormFields=[])
+#foreach($field in $tableFields)
+  #if(${field.propertyName}!="createTime" && ${field.propertyName}!="updateTime" && ${field.propertyName}!="createUser" && ${field.propertyName}!="updateUser")
+    #if(${field.keyFlag})
+        #set($temp=$dataFormFields.add($field))
+    #else
+        #set($temp=$dataViewFormFields.add($field))
+        #set($temp=$dataFormFields.add($field))
+    #end
+  #end
+#end
+#if(!$queryFields.isEmpty())
+  #foreach($field in $tableFields)
+    #foreach($filterCode in $queryFields)
+      #if(${field.propertyName} == $filterCode)
+      <el-form-item label="${field.comment}" prop="$filterCode">
+        #if(${field.propertyType}=="LocalDateTime")
+        #set($existsDate=true)
+        #set($temp=$!dateFilter.add($filterCode))
+        <el-date-picker
+          v-model="listQuery.$filterCode"
+          type="daterange"
+          align="right"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="yyyy-MM-dd"
+          :picker-options="pickerOptions"/>
+        #else
+        <el-input v-model="listQuery.$filterCode" placeholder="请输入${field.comment}" clearable @keyup.enter.native="handleFilter" />
+        #end
+      </el-form-item>
+      #end
+    #end
+  #end
+#end
+      <el-form-item>
+        <el-button v-waves v-permission="'${table.entityPath}_query'"  type="primary" icon="el-icon-search" @click="handleFilter">
+          搜索
+        </el-button>
+        <el-button v-waves v-permission="'${table.entityPath}_query'"  type="success" icon="el-icon-refresh" @click="resetForm('filterForm', listQuery, getList)">
+          重置
+        </el-button>
+        <el-button v-waves v-permission="'${table.entityPath}_add'"  type="primary" icon="el-icon-plus" @click="handleCreate" v-loading.fullscreen.lock="fullLoading">
+          新增
+        </el-button>
+      </el-form-item>
+    </el-form>
+##  获取主键
+#foreach($field in $tableFields)
+  #if(${field.keyFlag})
+    #set($keyPropertyName=${field.propertyName})
+  #end
+#end
+    <el-table
+      v-loading="listLoading"
+      :data="list"
+      fit
+      highlight-current-row
+      border
+      stripe
+      row-key="${keyPropertyName}"
+      @sort-change="sortChange($event, listQuery, handleFilter)"
+    >
+      <el-table-column label="序号" type="index" width="50px" />
+## ----------  BEGIN 字段循环遍历  ----------
+#foreach($field in $tableFields)
+  #if(!${field.keyFlag}&&${field.propertyType}=="LocalDateTime")
+      <el-table-column label="${field.comment}" prop="${field.propertyName}" align="center" width="150px" sortable="custom">
+        <template slot-scope="{row}">
+          <span>{{ row.${field.propertyName} | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+        </template>
+      </el-table-column>
+  #elseif(!${field.keyFlag})
+      <el-table-column label="${field.comment}" prop="${field.propertyName}" align="left" width="150px" sortable="custom"/>
+  #end
+#end
+      <el-table-column label="操作" align="center" width="200px" class-name="small-padding fixed-width">
+        <template slot-scope="{row}">
+          <el-button v-waves v-permission="'${table.entityPath}_edit'"  size="mini" type="primary" @click="handleUpdate(row)">
+            修改
+          </el-button>
+          <el-button v-waves v-permission="'${table.entityPath}_delete'" size="mini" type="danger" @click="handleDelete(row)">
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+
+    <el-dialog width="800px" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" :close-on-click-modal='false'>
+      <el-form class="dialog-from-margin" ref="formRef" :rules="rules" status-icon :model="dataform" label-position="left" label-width="80px">
+## ----------  判断每个字段是否单行显示  ----------
+#if($!{cfg.formLayout}=="2")
+        <el-row :gutter="20">
+    #foreach($field in $dataViewFormFields)
+          <el-col :span="12">
+            <el-form-item label="${field.comment}" prop="${field.propertyName}">
+            #if(${field.propertyType}=="LocalDateTime")
+              <el-date-picker
+                v-model="dataform.${field.propertyName}"
+                type="date"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                placeholder="请选择${field.comment}">
+              </el-date-picker>
+            #else
+              <el-input clearable v-model="dataform.${field.propertyName}" placeholder="请输入${field.comment}"/>
+            #end
+            </el-form-item>
+          </el-col>
+    #end
+        </el-row>
+#else
+  #foreach($field in $dataViewFormFields)
+        <el-form-item label="${field.comment}" prop="${field.propertyName}">
+          #if(${field.propertyType}=="LocalDateTime")
+          <el-date-picker
+            v-model="dataform.${field.propertyName}"
+            type="date"
+            placeholder="请选择${field.comment}">
+          </el-date-picker>
+          #else
+          <el-input clearable v-model="dataform.${field.propertyName}" placeholder="请输入${field.comment}"/>
+          #end
+        </el-form-item>
+  #end
+#end
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { ${table.entityPath}Info, create${entity}, update${entity}, delete${entity} } from '@/api/${cfg.entityPathName}'
+import Pagination from '@/components/Pagination' // 分页
+
+export default {
+  name: '${table.entityPath}',
+  components: { Pagination },
+  data() {
+    return {
+      list: [],
+      total: 0,
+      listLoading: true,
+      fullLoading: false,
+      listQuery: {
+        page: 1,
+        limit: 10,
+        sort: undefined,
+#if(!$queryFields.isEmpty())
+        order: undefined,
+  #foreach($filterCode in $queryFields)
+    #if($foreach.count==$queryFields.size())
+        $filterCode: undefined
+    #else
+        $filterCode: undefined,
+    #end
+  #end
+#else
+        order: undefined
+#end
+      },
+      dataform: {
+#foreach($field in $dataFormFields)
+    #if($foreach.count==$dataFormFields.size())
+        ${field.propertyName}: undefined
+    #else
+        ${field.propertyName}: undefined,
+    #end
+#end
+      },
+      // 新增修改弹框
+      dialogFormVisible: false,
+      dialogStatus: '',
+      textMap: {
+        update: '修改',
+        create: '新增'
+      },
+#if($existsDate)
+      pickerOptions: {
+        shortcuts: [{
+          text: '当前时间',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近一周',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近一个月',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近三个月',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+            picker.$emit('pick', [start, end])
+          }
+        }]
+      },
+#end
+      // 规则默认都不能为空，请自行修改
+      rules: {
+#foreach($field in $dataViewFormFields)
+    #if($foreach.count==$dataViewFormFields.size())
+        ${field.propertyName}: [
+          { required: true, message: '请输入${field.comment}', trigger: 'blur' }
+        ]
+    #else
+        ${field.propertyName}: [
+          { required: true, message: '请输入${field.comment}', trigger: 'blur' }
+        ],
+    #end
+#end
+      }
+    }
+  },
+  created() {
+    this.getList()
+  },
+  methods: {
+    resetTemp() {
+      this.dataform = {
+#foreach($field in $dataFormFields)
+  #if($foreach.count==$dataFormFields.size())
+        ${field.propertyName}: undefined
+  #else
+        ${field.propertyName}: undefined,
+  #end
+#end
+      }
+    },
+    getList() {
+      this.listLoading = true
+#if($existsDate)
+      const query = this.deepClone(this.listQuery)
+  #foreach($field in $dateFilter)
+      if (query.$field) {
+        query.$field = query.$field#[[.join(',')]]#
+      }
+  #end
+      ${table.entityPath}Info(query)
+#else
+      ${table.entityPath}Info(this.listQuery)
+#end
+        .then(response => {
+          this.list = response.data.result.records
+          this.total = response.data.result.total
+          this.listLoading = false
+        })
+        .catch(() => {
+          this.listLoading = false
+        })
+    },
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getList()
+    },
+    handleCreate() {
+      this.resetTemp()
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['formRef'].clearValidate()
+      })
+    },
+    createData() {
+      #[[this.$refs['formRef'].validate((valid) => {]]#
+        if (valid) {
+          this.fullLoading = true
+          create${entity}(this.dataform)
+            .then(() => {
+              this.fullLoading = false
+              this.dialogFormVisible = false
+              this.notifyMessage()
+              this.getList()
+            })
+            .catch(() => {
+              this.fullLoading = false
+              this.dialogFormVisible = false
+            })
+        }
+      })
+    },
+    handleUpdate(row) {
+      this.dataform = Object.assign({}, row) // copy obj
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['formRef'].clearValidate()
+      })
+    },
+    updateData() {
+      #[[this.$refs['formRef'].validate((valid) => {]]#
+        if (valid) {
+          const tempData = Object.assign({}, this.dataform)
+          this.fullLoading = true
+          update${entity}(tempData)
+            .then(() => {
+              this.fullLoading = false
+              this.dialogFormVisible = false
+              this.notifyMessage()
+              this.getList()
+            })
+            .catch(() => {
+              this.fullLoading = false
+              this.dialogFormVisible = false
+            })
+        }
+      })
+    },
+    handleDelete(row) {
+      this.$confirm('确认删除该记录？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.fullLoading = true
+        delete${entity}(row.$keyPropertyName)
+          .then(() => {
+            this.fullLoading = false
+            this.notifyMessage()
+            this.handleFilter()
+          })
+          .catch(() => {
+            this.fullLoading = false
+          })
+      }).catch(() => {
+        this.notifyMessage('info', '删除取消！')
+      })
+    }
+  }
+}
+</script>

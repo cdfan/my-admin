@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body style="margin: 0px;
+            padding: 0px;
+			font: 100% SimSun, Microsoft YaHei, Times New Roman, Verdana, Arial, Helvetica, sans-serif;
+            color: #000;">
+<div style="height: auto;
+			width: 820px;
+			min-width: 820px;
+			margin: 0 auto;
+			margin-top: 20px;
+            border: 1px solid #eee;">
+  <div style="padding: 10px;padding-bottom: 0px;">
+    <p style="margin-bottom: 10px;padding-bottom: 0px;">尊敬的<span th:text="${userName}"></span>用户，您好：
+    </p>
+    <p style="text-indent: 2em; margin-bottom: 10px;">您正在申请邮箱验证，您的验证码为：</p>
+    <p style="text-align: center;
+			font-family: Times New Roman;
+			font-size: 22px;
+			color: #00CC99;
+			padding: 20px 0px;
+			margin-bottom: 10px;
+			font-weight: bold;
+			background: #ebebeb;"
+       th:text="${code}"></p>
+    <div style="text-align: right; margin-right: 50px;">
+      <a th:href="@{${url}}">
+        <input type="button" value='>>前往系统'
+               style="height: 40px; color: white; border: 1px solid #00CC99; background-color: #00CC99; cursor: hand;">
+      </a>
+    </div>
+    <div class="foot-hr hr" style="margin: 0 auto;
+			z-index: 111;
+			width: 800px;
+			margin-top: 30px;
+			border-top: 1px solid #DA251D;">
+    </div>
+    <div style="text-align: center;
+			font-size: 12px;
+			padding: 20px 0px;
+			font-family: Microsoft YaHei;">
+      Copyright &copy;<span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> MyAdmin
+      后台管理系统 All Rights Reserved.
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

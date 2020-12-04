@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.workflow.example.shoppingprocess.dao.ShoppingProcessMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.workflow.example.shoppingprocess.entity.ShoppingProcess">
+        <id column="shop_id" property="shopId"/>
+        <result column="proc_inst_id" property="procInstId"/>
+        <result column="user_id" property="userId"/>
+        <result column="shop_proc_state" property="shopProcState"/>
+        <result column="goods_code" property="goodsCode"/>
+        <result column="goods_count" property="goodsCount"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="area" property="area"/>
+        <result column="street" property="street"/>
+        <result column="address" property="address"/>
+        <result column="tracking_number" property="trackingNumber"/>
+        <result column="express_type" property="expressType"/>
+        <result column="courier" property="courier"/>
+        <result column="courier_phone" property="courierPhone"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="goods_name" property="goodsName"/>
+        <result column="user_name" property="userName"/>
+        <result column="shop_proc_state_name" property="shopProcStateName"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.shop_id,
+        A.proc_inst_id,
+        A.user_id,
+        A.shop_proc_state,
+        A.goods_code,
+        A.goods_count,
+        A.province,
+        A.city,
+        A.area,
+        A.street,
+        A.address,
+        A.tracking_number,
+        A.express_type,
+        A.courier,
+        A.courier_phone,
+        A.create_user,
+        A.create_time,
+        A.update_user,
+        A.update_time
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        demo_shopping_process A
+    </sql>
+    <select id="pageInfo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>,
+        sd.name as goods_name, su.user_name, sdp.name as shop_proc_state_name
+        FROM <include refid="tableName"/>
+        LEFT JOIN sys_dict sd ON A.goods_code = sd.code AND sd.pcode = 'goods_type'
+        LEFT JOIN sys_user su ON a.user_id = su.user_id
+        LEFT JOIN sys_dict sdp ON A.shop_proc_state = sdp.code AND sdp.pcode = 'shop_proc_state'
+        <where>
+            <if test='goodsCode!=null and goodsCode!=""'>
+                and a.goods_code = #{goodsCode}
+            </if>
+            <if test='shopProcState!=null and shopProcState!=""'>
+                and a.shop_proc_state = #{shopProcState}
+            </if>
+            <if test='userId!=null and userId!=""'>
+                and a.user_id = #{userId}
+            </if>
+        </where>
+        order by A.create_time desc
+    </select>
+</mapper>

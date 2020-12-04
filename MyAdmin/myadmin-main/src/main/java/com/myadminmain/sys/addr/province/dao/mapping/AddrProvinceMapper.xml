@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.myadminmain.sys.addr.province.dao.AddrProvinceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.myadminmain.sys.addr.province.entity.AddrProvince">
+        <id column="PROVINCE_ID" property="provinceId"/>
+        <result column="PROVINCE_CODE" property="provinceCode"/>
+        <result column="PROVINCE_NAME" property="provinceName"/>
+        <result column="SHORT_NAME" property="shortName"/>
+        <result column="LNG" property="lng"/>
+        <result column="LAT" property="lat"/>
+        <result column="SORT" property="sort"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MEMO" property="memo"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        A.PROVINCE_ID,
+        A.PROVINCE_CODE,
+        A.PROVINCE_NAME,
+        A.SHORT_NAME,
+        A.LNG,
+        A.LAT,
+        A.SORT,
+        A.CREATE_TIME,
+        A.UPDATE_TIME,
+        A.MEMO
+    </sql>
+
+    <!-- 表名称 -->
+    <sql id="tableName">
+        sys_addr_province A
+    </sql>
+</mapper>

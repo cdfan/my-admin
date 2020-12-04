@@ -1,0 +1,196 @@
+# 日志配置
+logging:
+  config: classpath:logback-spring.xml
+
+spring:
+  # 环境配置
+  profiles:
+    active: dev
+
+  # -----------DataSource druid Config-----------
+  datasource:
+    username: root
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      #连接池补充配置
+      initial-size: 5
+      max-active: 20       #最大连接个数
+      min-idle: 5          #最小连接个数
+      max-wait: 10000       #最大等待时间
+      time-between-eviction-runs-millis: 600000 # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      min-evictable-idle-time-millis: 300000 #配置一个连接在池中最大空闲时间，单位是毫秒
+      test-on-borrow: false #设置从连接池获取连接时是否检查连接有效性
+      test-on-return: false #设置往连接池归还连接时是否检查连接有效性
+      test-while-idle: true #设置从连接池获取连接时是否检查连接有效性,如果连接空闲时间超过minEvictableIdleTimeMillis进行检查，否则不检查;false时，不检查
+      validation-query: select 1 from dual #检验连接是否有效的查询语句
+      log-abandoned: true #打开abanded连接时输出错误日志
+      pool-prepared-statements: true #打开PSCache
+      max-pool-prepared-statement-per-connection-size: 20 #PSCache的大小
+      filters: stat,wall #配置扩展插件 ,slf4j
+      connect-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000 # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      # 配置监控服务器 访问地址：http://localhost:8080/druid/index.html
+      stat-view-servlet:
+        enabled: true
+#        login-username: admin
+#        login-password: 123456
+        url-pattern: /druid/*
+#        deny优先于allow，如果在deny列表中，就算在allow列表中，也会被拒绝。
+#        如果allow没有配置或者为空，则允许所有访问,不为空默认只允许localhost访问
+        allow:
+      web-stat-filter:
+        enabled: true
+        url-pattern: /* # 添加过滤规则
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*,/v2/*,/swagger-resources/*,/webjars/*,/resources/*,/workflow/*"
+        session-stat-enable: false
+
+  #----------spirng mvc配置---------
+  mvc:
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,file:${myadmin.resource-path}
+  # 设置上传文件大小限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  #---------缓存配置----------
+  #redis 配置
+  redis:
+    host: localhost
+    password: xxx
+    port: 6379
+    lettuce: # 使用默认的lettuce连接池
+      shutdown-timeout: 5s # 关闭超时时间
+      pool:
+        max-active: 8 # 连接池最大连接数（使用负值表示没有限制）
+        max-idle: 2 # 连接池中的最大空闲连接
+        max-wait: -1ms  # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        min-idle: 0 # 连接池中的最小空闲连接
+
+  #activit配置
+  activiti:
+    # 设置为该值后，Activiti会对数据库中所有的表进行更新，如果表不存在，则Activiti会自动创建。
+    database-schema-update: true
+    #保存历史数据级别设置为full最高级别，便于历史数据的追溯
+    history-level: full
+    #关闭activiti自动部署（使用流程设计器部署，不使用具体文件访问方式）
+    check-process-definitions: false
+    #弃用activiti提供的用户模块
+    db-identity-used: false
+
+  #邮件服务配置
+  mail:
+    host: smtp.126.com
+    port: 465
+    username: f4112cd@126.com
+    password: xxx
+    protocol: smtp
+    test-connection: true
+    default-encoding: UTF-8
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.ssl.enable: true
+      mail.display.sendmail: MyAdmin
+
+#mybatis-plus配置
+mybatis-plus:
+  mapper-locations: classpath:com/myadminmain/**/mapping/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+#token配置
+token:
+  #token有效时间,在这个时间之后将登录超时，单位：分钟
+  token-valid-time: 60
+  #token刷新时间，超过这个时间在访问将重新签发一个token，并重置token有效时间，单位：分钟
+  token-refresh-time: 30
+
+#项目自定义配置
+myadmin:
+  # 用户头像存储位置，当前位置在资源存储位置下
+  user-avatar-path: resources/img/avatar/
+  # 富文本编辑器上传的图片存储位置，当前位置在资源存储位置下
+  editor-image-path: resources/img/editor/
+  #是否启用XSS过滤
+  xss-filter: false
+  #是否启用RedisTemplate
+  redis-template: false
+  # redis默认缓存过期时间，单位分钟
+  redis-default-cache-expires: 30
+  # redis用户权限相关缓存过期时间，单位分钟
+  redis-user-auth-cache-expires: 60
+  # redis临时缓存过期时间，单位分钟
+  redis-temp-cache-expires: 3
+  # 日志文件名称
+  log-file: MyAdmin
+  # 日志保存时间单位天
+  log-save-days: 90
+
+
+---
+# 测试环境配置
+spring:
+  profiles: dev
+  datasource:
+    password: xxx
+    url: jdbc:mysql://localhost:3306/myadmin_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Hongkong&nullCatalogMeansCurrent=true
+  cache:
+    # 使用的缓存，可以选为redis或ehcache
+    type: redis
+
+# 项目自定义配置
+myadmin:
+  # 是否需要认证,在通过swagger进行测试的时候可以关闭
+  auth: true
+  # 是否需要鉴权，在通过swagger测试的时候可以关闭
+  permission: true
+  # web项目地址url+端口
+  web-url: http://localhost:80
+  #资源位置
+  resource-path: E:\project\data\
+  # 生成代码默认输出位置
+  generate-code-output-dir: E:\project\temp\code
+  # 日志文件输出目录
+  log-dir: E:\project\data\log
+  # 用于正式环境禁用对数据产生影响的请求
+  disable-request: false
+---
+# 正式环境配置
+spring:
+  profiles: prod
+  datasource:
+    password: xxx
+    url: jdbc:mysql://localhost:3306/myadmin_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Hongkong&nullCatalogMeansCurrent=true
+  cache:
+    # 使用的缓存，可以选为redis或ehcache
+    type: ehcache
+#项目自定义配置
+myadmin:
+  #是否需要认证,在通过swagger进行测试的时候可以关闭
+  auth: true
+  #是否需要鉴权，在通过swagger测试的时候可以关闭
+  permission: true
+  # web项目地址url+端口
+  web-url: http://8.129.86.120:80
+  #资源位置
+  resource-path: /myadmin/data/
+  # 生成代码默认输出位置
+  generate-code-output-dir: /myadmin/data/code_temp
+  # 日志文件输出目录
+  log-dir: /myadmin/data/log
+  # 用于正式环境禁用对数据产生影响的请求
+  disable-request: true
+
+
+
+
+
+
+
+
+
+
