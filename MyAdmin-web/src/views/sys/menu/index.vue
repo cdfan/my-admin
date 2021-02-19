@@ -82,18 +82,7 @@
           <MenuSelect ref="menuSelect" :value.sync="dataform.pid" placeholder="请选择上级菜单"/>
         </el-form-item>
         <el-form-item v-show="dataform.ismenu==='1'" label="菜单图标" prop="icon">
-          <el-popover  placement="bottom"  width="460"  trigger="click"  @show="$refs['iconSelect'].reset()">
-            <IconSelect ref="iconSelect" @selected="selected" />
-            <el-input slot="reference" v-model="dataform.icon" placeholder="点击选择图标" readonly>
-              <svg-icon
-                v-if="dataform.icon"
-                slot="prefix"
-                :icon-class="dataform.icon"
-                class="el-input__icon"
-              />
-              <i v-else slot="prefix" class="el-icon-search el-input__icon" />
-            </el-input>
-          </el-popover>
+          <IconSelect ref="iconSelect" :value.sync="dataform.icon" />
         </el-form-item>
         <el-row :gutter="20">
           <el-col :span="12">
@@ -380,10 +369,6 @@ export default {
       }).catch(() => {
         this.notifyMessage('info', '删除取消！')
       })
-    },
-    // 选择图标
-    selected(name) {
-      this.dataform.icon = name
     },
     clearData() {
       // 当类型为按钮时将图标以及url清除
