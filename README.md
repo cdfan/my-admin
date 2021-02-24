@@ -76,7 +76,7 @@
 - 前端
   - 基础的：HTML、JavaScript、CSS、ES6、SCSS
   - Vue系列及相关：Vue.js、Vuex、Vue Router 、Vue CLI，ElementUI、Axios
-  - 插件：插件有很多这里简单列举几个：EChartss、XLSX、wangEditor、vue-amap等等
+  - 插件：插件有很多这里简单列举几个：EChartss、js-xlsx、wangEditor、vue-amap等等
   - 其他：Node.js、webpack、Mock.js、ESLint、Babel
 - 后端
   - 基础的：Java
