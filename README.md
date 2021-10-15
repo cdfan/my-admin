@@ -4,7 +4,7 @@
 
 该项目是一个前后端分离的项目，后端基于Spring Boot、MyBatis-Plus、Shiro+JWT并整合了Activiti工作流。前端基于Vue以及ElementUI，主要作为一个基础平台，包含后台管理系统中所需的所有功能，可直接在此基础上进行业务功能开发
 
-- 演示地址：http://8.129.86.120/
+- 演示地址：http://101.34.139.112/
   - 演示环境说明：演示地址目前只有**工作流示例**和**生成代码展示**可以进行增加及修改系列操作，其他功能只开放了查询操作
   - 账号：管理员（`admin`），其他用户（`user1、user2、user3... `具体可查看系统中用户模块）
   - 密码：所有用户的密码都为`123456`
@@ -99,9 +99,10 @@
 
 ## 支持浏览器
 
-| [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" style=""/>](https://godban.github.io/browsers-support-badges/) | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox"/>](https://godban.github.io/browsers-support-badges/) | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="Edge" />](https://godban.github.io/browsers-support-badges/) | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_48x48.png" alt="Safari"/>](https://godban.github.io/browsers-support-badges/) |
-| :--------------------------------------: | :--------------------------------------: | :--------------------------------------: | :--------------------------------------: |
-|                  Chrome                  |                 Firefox                  |                   Edge                   |                  Safari                  |
+
+| ![chrome_48x48](img/chrome_48x48.png) | ![firefox_48x48](img/firefox_48x48.png) | ![edge_48x48](img/edge_48x48.png) | ![safari_48x48](img/safari_48x48.png) |
+| :-----------------------------------: | :-------------------------------------: | :-------------------------------: | :-----------------------------------: |
+|                Chrome                 |                 Firefox                 |               Edge                |                Safari                 |
 
 **注意**：不兼容IE(Internet Explorer)系列
 
@@ -166,7 +167,7 @@
 
 ## 支持
 
-如果觉得这个项目以及相关博客不错有帮助到了你，希望你可以去 [Github](https://github.com/cdfan/my-admin)或者 [Gitee](https://gitee.com/cdfan/my-admin) 帮我点个 ⭐ ，以及[博客](https://blog.csdn.net/f4112cd/category_9712097.html)给个一键三连，这将对我是极大的鼓励，谢谢~
+如果觉得这个项目以及相关博客不错有帮助到了你，希望可以去 [Github](https://github.com/cdfan/my-admin)或者 [Gitee](https://gitee.com/cdfan/my-admin) 帮我点个 ⭐ ，以及[博客](https://blog.csdn.net/f4112cd/category_9712097.html)给个一键三连，这将对我是极大的鼓励，谢谢~
 
 [![Gitee star](https://gitee.com/cdfan/my-admin/badge/star.svg?theme=white)](https://gitee.com/cdfan/my-admin)&ensp; [![GitHub star](https://img.shields.io/github/stars/cdfan/my-admin?style=social)](https://github.com/cdfan/my-admin)
 

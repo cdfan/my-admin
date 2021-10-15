@@ -2,7 +2,6 @@ package com.common.annotion;
 
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -12,7 +11,6 @@ import java.lang.annotation.Target;
  * @author cdfan
  * @date 2020/3/16 15:52
  */
-@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface Permission {
